@@ -1,0 +1,67 @@
+VPC
+A Virtual Private Cloud is AWS is a logically isolated section of AWS cloud where you can define your own virtual network. This network closely resembles a traditional network that might you operate in your own data center, but it comes 
+with the benefits of AWS scalable infrastructure.
+
+Ex: Building a Secure Office cloud and no other any external unauthorized user can access the cloud and only those who have the security clearance for that can have access to that cloud.
+
+Step1. Choose VPC --> In AWS VPC is isolated area where you build your virtual network.
+
+
+All networking related part comes under VPC.
+
+We can create custom network through VPC provided by AWS cloud instead of configuring some type of hardware.
+
+A DHCP (Dynamic Host Configuration Protocol) server is a network server that automatically assigns IP addresses and other network configuration settings to devices (clients) on a network. This eliminates the need for manually configuring IP addresses for each device.
+
+NAT: Network Address Translation
+Network Address Translation (NAT) is a technique used in routers or firewalls to modify IP addresses in packet headers while traffic is passing through a network. It allows multiple devices on a private network to access the internet using a single public IP address.
+
+Types of NAT
+1.) Static NAT – Maps a private IP to a specific public IP one-to-one.
+               Example: 192.168.1.100 → 203.0.113.50
+               Used for servers needing constant public access (e.g., web servers).
+
+2.) Dynamic NAT – Maps private IPs to a pool of public IPs.
+             Example: Multiple internal IPs get different public IPs from a pool.
+             Less common due to IPv4 shortages.
+
+3.) PAT (Port Address Translation) / NAT Overload – Maps multiple private IPs to a single public IP using different ports.
+               Example: 192.168.1.10:1234 → 203.0.113.50:5678
+               Most commonly used for home and business internet sharing.
+
++---------------------------+--------------------------------+---------------------------+------------------+----------------+----------------+
+ | Class                    | Private IP address range       | Subnet mask               | CIDR Notations   | Number of IPs  | Usable Hosts   |
++---------------------------+--------------------------------+---------------------------+------------------+----------------+----------------+
+ | A                        | 10.0.0.0 - 10.255.255.255      | 255.0.0.0                 | /8               | 16777216       | 16777214       |
++---------------------------+--------------------------------+---------------------------+------------------+----------------+----------------+
+ | B                        | 172.16.0.0 - 172.16.31.255     | 255.255.0.0               | /16              | 65536          | 65534          |
++---------------------------+--------------------------------+---------------------------+------------------+----------------+----------------+
+ | C                        | 192.168.0.0 -192.168.255.255   | 255.255.255.0             | /24              | 256            | 254            |
++---------------------------+--------------------------------+---------------------------+------------------+----------------+----------------+
+ | D                        | 224.0.0.0 – 239.255.255.255    | 255.255.255.252           | /30              | 4              | 2              |
++---------------------------+--------------------------------+---------------------------+------------------+----------------+----------------+
+
+
+Private IPs can communicate only in same network.
+So in AWS EC2 instance communicate with each other with the help of VPC.
+
+Features:
+1. Subnets: Divide VPC into subnets. They can be public, private, hybrid.
+2. IP Addressing: Defining a range of IP addresses in VPC using CIDR( Classless Inter-Domain Routing) blocks.
+3. Route Tables: Determining the direction of network traffic and create custom route tables to control traffic flow between subnets.
+4. Internet Gateway: An internet gateway allows your VPC to connect to the internet.
+5. NAT Gateway: Used to enable instances in a private subnet to connect to the internet from initiating connections with those instances.
+6. Security Groups: Those act as a virtual firewalls for your instances to control inbound and outbound traffic.
+7. Network ALCs (Access Control Lists): These are another layer of security at the subnet level that controls traffic in and out of the subnets.
+
+Ex: 
+192.168.0.0/16 --> host configuration in this class --> 16 power of 2 --> 256 *256 --> 65536 ------->  Partition of these 65536 IPs -->192.168.0 - 255.0/24 --> 256 
+16 bit reserved for network and remaining 16 for the host from a total of 32 bit address.
+
+Step by step setup in a VPC:
+1. Create a VPC:
+         CIDR block: You create a VPC with a CIDR block of 10.0.0.0/16 which allows for 65536 IP address in your VPC.
+2. Create subnets:
+          * Public Subnet: You create a public subnet with a CIDR block at 10.0.1.0/24. This subnet will host your web browser and will have access to the internet.
+          * Private Subnet: You create a private subnet with a CIDR block at 10.0.2.0/24. This subnet will host your database server, which will not be accessible from the internet.
+
