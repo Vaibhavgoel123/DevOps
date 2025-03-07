@@ -1,0 +1,592 @@
+DevOps
+Managing dns servers
+iana : Internet Assigned Numbers Authority
+
+1.) . --> root dns server 
+	i.).in           --|
+	ii.).org           | 
+	iii.).tech         |
+	iv.).fun           |--tld
+	v.).edu            |
+	vi.).tk            |
+	vii.).com          |
+	more..		 --|
+Domain registrar: hostinger, GoDaddy
+tld: Top-level domain
+ex: linuxguru.tech.
+.com = 2.2.2.2
+.tech = 4.4.4.4
+.in = 3.3.3.3
+
+Responsible for dns resolving the IP address
+1.)root dns server 
+2.)dns resolver/cache dns
+3.)tld
+4.)authorative dns
+                                         |--> root name server
+web server             |                 |<--  
+                       | --> client --> isp --> dns resolver 
+ex. www.eshopping.com  | <--        <-- ||-->.com(www.eshopping.com --> 45.67.23.23)
+    (12.56.82.10)                       ||<--
+                                        |<--
+                                        |-->Authorized dns server (45.67.23.23)
+
+DHCP(Dynamic Host Configuration Protocol):
+It is a network management protocol used on IP networks for automatically assigning IP addresses and comm. parameters to device connected to the network using a client-server
+architecture.
+
+recursive: client-server(msg,error) server-server(refel,msg,error)
+iterative: client-server(msg,refel)
+
+DNS Records:
+1. A --> IPV4
+2. AAAA --> IPV6
+3. CNAME (Canonical Name) --> It is an alias of a domain 
+ex. www.example.com(CNAME) --> example.com(Domain)
+4. MX (Mail Exchange) --> It is basically used for mail server and for record it use 'A' record
+5. TXT (text) --> Human readable form
+6. NS (NameServer) -->|--> Primary NS (Master)    ---> IPV4
+ 		      |--> Secondary NS (Slave)
+7.SOA (Start of Authority) --> It has an important info. about the domain.
+8.PTR --> Used for reverse lookup.
+
+Web Server
+
+1. yum install -y httpd wget vim bash-completion
+2. Document root: /var/www/html
+3. To check logs: /var/log/httpd
+3. Instances --> Security --> Security group --> Edit inbound rules --> add rule --> http
+4. Configuration files --> /etc/httpd/conf or for random files /etc/httpd/conf.d
+vim akaay.conf (in conf.d)
+                                             
+<virtualhost *:80>
+serveradmin root@localhost
+servername www.akaay.online
+documentroot /var/www/html
+</virtualhost>
+
+
+Ansible Intro
+
+DevOps tasks before automation
+1. Server: Cloud, onpremise, virtualisation
+2. OS
+3. Networking
+4. Web server(apache,nginx)
+5. Changes in config file
+6. Copy website data into document root
+7. Service start
+
+Ansible do not need to ansible on managed host because ansible is agent less
+
+Infra provisioning tool --> Terraform
+Ansible is a configuration tool and it can also be used for Infra provisioning but it is not that efficient as Terraform
+
+Central node(Where ansible installed)|
+Managed hosts <-----------------------
+1. ssh 22 rhel (Linux distribution)
+2. ssh 22 unix
+3. winrm windows
+4. cli over ssh
+   xml over ssh         Network devices
+   api over http/https 
+
+Inventory is a collection of sever ip and hostname
+
+Ansible commands --> modules --> a piece of code | option --> attributes
+
+Playbook --> It is a desired state of managed hosts( yaml/json)
+Playbook --> Collection of plays.
+Play --> Collection of tasks(modules).
+
+How ansible modules are fired in the managed hosts?
+
+1. All modules are written in python
+2. Linux + Unix + Windows all are having python.
+3. Ansible copies the module from playbook on the control node to manage node over ssh
+4. python is available on MH (Managed Host).
+
+Features:
+1. Simple
+2. Powerful
+3. Agentless
+
+Alternatives: 
+1. Ansible = controlnode + MH + python + agentless + ssh + multimaster + push theory
+2. Puppet = controlnode + MH + puppetds! + agent + ssl + multimaster + pull theory
+3. Chef = controlnode + MH + ruby + agent + ssl + multimaster + pull theory
+
+ansible tower --> webui interface platform(AWX)
+
+Playbook entry
+---
+ - name: This is my first play
+   hosts: dev
+   tasks:
+          - name: file creation
+            file:
+                      path: /tmp/test.conf
+                      state: touch
+
+          - name: Modify test.conf using lineinfile module
+            lineinfile:
+                      path: /tmp/test.conf
+                      line: This is my first playbook
+- name: this is 2nd play
+  hosts: mnl
+  tasks: 
+	-name: change ownerships and permission
+	 file: 
+		path: /tmp/test.conf
+		owner: student
+		mode: '4777'
+
+ansible -playbook first.yaml
+
+NFS
+---
+ - name: Configure nfs on mn1
+   hosts: mn1
+   tasks: 
+		- name: install nfs-utils
+	          yum:
+			name: nfs-utils
+			state: present
+		- name: start & enable nfs-server.service
+		  service:
+			name: nfs-server.service
+			state: started
+			enabled: yes
+		- name: open 2049/tcp port on firewall
+		  firewalld:
+			port: 2049/tcp
+			state: enabled
+			permanent: true
+			immediate: true
+		- name: open rpc-bind on firewall
+		  firewalld:
+			service: rpc-bind
+			state: enabled
+			permanent: true
+			immediate: true
+		- name: open mountd on firewall
+		  firewalld:
+			service: mountd
+			state: enabled
+			permanent: true
+			immediate: true
+		-name: create directory for sharing
+		 file:
+			path: /nfs_share
+			state: directory
+			mode: '777'
+			owner: student
+		- name: modify exports file
+		  lineinfile:
+			path: /etc/exports
+			line: /nfs_share <mn1_private_ip>(rw,sync)
+		- name: restart nfs-server.service
+		  service:
+			name: nfs-server.service
+			state: restarted
+			
+ansible -m command -a "exportfs -rv" mn1
+ansible -m command -a "mount <mn1_ip> :/nfs_share /mnt" mn2
+df -h
+umount /mnt
+
+AutoFS
+---
+ - name: configure autofs on mn2
+   hosts: mn2
+   tasks: 
+		- name: install autofs
+		  yum:
+			name: autofs
+			state: present
+		- name: start & enable autofs.service
+		  service: 
+			name: autofs
+			state: started
+			enabled: yes
+		- name: create mount point
+		  file:
+			path: /nfs_mount
+			state: directory
+		- name: create and modify custom file
+		  lineinfile:
+			path: /etc/auto.master.d/arya.autofs
+			line: /-	/etc/auto.misc
+			create: yes
+		- name: modify auto.misc file
+		  lineinfile:
+			path: /etc/auto.misc
+			line: /nfs_mount -rw,soft,intr <mn1_ip>:/nfs_share
+		- name: start & enable autofs.service
+		  service: 
+			name: autofs
+			state: restarted
+	
+ansible -m command -a "cd /nfs_mount"
+
+Web server
+---
+ - name: configure server
+   hosts: dev
+   tasks: 
+	- name: install httpd
+	  yum: 
+		name: httpd
+		state: present
+	- name: start and enable httpd.service
+	  service:
+		name: httpd
+		state: started
+		enabled: yes
+	- name:  Open 80/tcp port on firewall
+	  firewalld
+		port: 80/tcp
+		state: enabled
+		permanent: true
+		immediate: true
+	- name: copy web content to document root
+	  copy:
+		src: ./index.html
+		dest: /var/www/html
+		
+	- name: restart httpd.service
+	  service:
+		name: httpd.service
+		state: restarted
+
+variable
+Global scope: It can be defined in command         --> Highest Scope
+Host scope: It can be defined in inventory file    --> Lowest Scope
+Play scope: It can be defined in playbook          --> Medium Scope
+
+(( package )) --> Ginger calling --> If it is a part of a line
+"{{ package }}" --> If it is not a part of line
+
+ansible-playbook webserver.yml -e package=httpd -e service=httpd.service -e port=80/tcp    --> Global scope
+
+---
+ - name: configure server
+   hosts: dev
+   vars: 
+	 package: httpd
+	 service: httpd.service     ---> Play scope
+	 port: 80/tcp
+   tasks: 
+	- name: install httpd
+	  yum: 
+		name: httpd
+		state: present
+	- name: start and enable httpd.service
+	  service:
+		name: httpd
+		state: started
+		enabled: yes
+	- name:  Open 80/tcp port on firewall
+	  firewalld
+		port: 80/tcp
+		state: enabled
+		permanent: true
+		immediate: true
+	- name: copy web content to document root
+	  copy:
+		src: ./index.html
+		dest: /var/www/html
+		
+	- name: restart httpd.service
+	  service:
+		name: httpd.service
+		state: restarted
++--------------------------------+
+|**Extra**                       |
+|DAS = Direct Attached Storage   |
+|SAN = Storage Area Network      |
+|NAS = Network Area Storage      |
++--------------------------------+
+|**Points to remember**          |
+|Auto Scaling                    |
+|Load Balancing                  |
+|VPC(Virtual Private Cloud)      |
++--------------------------------+
+
+EBS -> Elastic Block Storage
+S3 -> Simple Storage Service --> Object based storage 
+EFS -> Elastic File System                             
+ 
+Features of S3:
+1. It is a Secure storage service.
+2. It is a global service but its bucket is region specific service.
+3. It provides Platform as a Service (PAAS) to store the objects.
+
+Rules of S3:
+1. You need to create a bucket to store the data.h
+2. You can store 0 to 5TB in single bucket.
+3. You can create 100 buckets in single account.
+4. 5GB storage in free tier.
+
+
+Rules of bucket:
+1. Bucket name should be in lowercase, number, ., and -.
+2. Bucket name must be globally unique.
+3. Bucket name start with name or letter.
+4. You cannot change bucket name after creation.
+5. You cannot the ownership of the bucket once created.
+
+Routing policy
+1. Simple --> Only 1 A record
+2. Multivalue answer --> Multiple records
+3. Failover --> Active-passive failover
+4. Geolocation --> Location based routing
+5. Geoproximity -> Switch to nearby located server if main server crashes.
+6. Latency --> Nearby users can access the server whereas far users affects by some latency.
+7. IP based --> IP is used to identify the users location.
+8. Weighted --> It is used to lead the traffic to the weighted zone.
+
+
+**Extra
+Mail server port 25
+Let's encrypt provides free SSL certificate.
+
+Difference between ngnix and httpd  
+
+**Docker
+BM --> Bare Metal
+
+Type1: Container +-> Linux OS +-> Hyper Visor +-> BM
+Type2: Container +-> Linux OS +-> Hyper Visor +-> OS +-> BM 
+
+Components: 
+1. Docker Host
+2. Docker Demon
+3. Docker Client
+4. Docker Registry
+
+Some docker commands
+1. docker image ls(List images)
+2. docker container ls(List containers)
+3. docker volume ls(List volumes)
+4. docker network ls(List networks)
+
+To exit from a container but do not stop it
+Ctrl + P + Q
+
+Ques1. Exit code of containers
+Ques2. File system used by containers
+Ques3. awk centos command
+
+ 9  sudo dnf -y install dnf-plugins-core
+   10  sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+   11  sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+   12  sudo systemctl enable --now docker
+   13  sudo docker run hello-world
+   14  docker container run httpd
+   15  docker container ls
+   16  docker container ls -a
+   17  docker conatiner start httpd
+   18  docker container start httpd
+   19  docker container start httpd-foreground
+   20  docker container start vigorous_ramanujan
+   21  docker container ls
+   22  docker container run -d ubuntu
+   23  docker container ls
+   24  docker container ls -a
+   25  docker container run -d ubuntu
+   26  docker container ls -a
+   27  docker container run -itd ubuntu
+   28  docker container ls
+   29  docker exec -it ad5240f8a1f5 bash
+   30  docker container create wget
+   31  docker container start wget
+   32  docker container create autofs
+   33  docker container create httpd
+   34  docker container ls -a
+   35  docker container start nervous_hermann
+   36  docker container ls -a
+   37  docker container stop vigorous_ramanujan
+   38  docker container rm -f vigorous_ramanujan
+   39  docker container ls -a
+   40  docker container rm -f beautiful_williamson wonderful_hypatia blissful_black
+   41  docker container ls -a
+   42  docker container run -it ubuntu
+   43  docker container ls -a
+   44  docker container exec -it hopeful_hertz
+   45  docker container exec -it hopeful_hertz bash
+   46  docker container exec hopeful_hertz bash
+   47  docker container exec -it hopeful_hertz bash
+   48  docker container attach hopeful_hertz
+   49  docker container ls -a
+   50  docker container exec -it nervous_hermann bash
+   51  docker container ls -a
+   52  docker container attach nervous_hermann
+   53  docker container ls -a
+   54  docker container start nervous_hermann
+   55  docker container exec -it nervous_hermann bash
+   56  docker container rename hopeful_hertz myos
+   57  docker container run ollama
+   58  docker pull ollama/ollama
+   59  docker image ls
+   60  docker container run ollama/ollama
+   61  docker image ls
+   62  docker image rm -f ollama/ollama:latest
+   63  docker container ls
+   64  docker container inspect laughing_cannon
+   65  docker container logs nervous_hermann
+   66  docker container stats
+   67  docker container pause nervous_hermann
+   68  docker container ls -a
+   69  top
+   70  docker container unpause nervous_hermann
+   71  docker container ls -a
+   72  docker container run -d ubuntu sleep20
+   73  docker container run -d ubuntu sleep 20
+   74  docker container ls
+   75  docker container run -d ubuntu cat /etc 20
+   76  docker container ls
+   77  docker container inspect nervous_hermann
+   78  curl "172.17.0.2"
+   79  docker container exec -it nervous_hermann bash
+   80  docker container ls
+   81  docker container cp /var/www/html/index.html nervous_hermann:/usr/local/apache2/htdocs
+   82  docker container cp index.html nervous_hermann:/usr/local/apache2/htdocs
+   83  ls /
+   84  ls /var
+   85  ls
+   86  touch index.html
+   87  ls
+   88  docker container cp index.html nervous_hermann:/usr/local/apache2/htdocs
+   89  docker container -exec -it nervous_hermann "ls /usr/local/apache2/htdocs"
+   90  docker container -exec -it nervous_hermann bash
+   91  docker container exec -it nervous_hermann "ls /usr/local/apache2/htdocs"
+   92  docker container exec -it nervous_hermann "ls /usr/local/apache2/htdocs" bash
+   93  docker container exec -it nervous_hermann bash
+   94  docker container cp index.html nervous_hermann:/usr/local/apache2/htdocs
+   95  docker container exec -it nervous_hermann bash
+   96  docker container run -itd --hostname arya ubuntu
+   97  docker container ls
+   98  docker container exec -it relaxed_solomon hostname
+   99  docker container run -itd --hostname localhost centos
+  100  docker container ls
+  101  docker container exec -it angry_einstein
+  102  docker container exec -it angry_einstein bash
+  103  docker container ls
+  104  docker container inspect angry_einstein
+  105  curl "172.17.0.5"
+  106  docker container ls
+  107  docker container ls -a
+  108  docker container top
+  109  docker container prune
+
+Total no. of ports any server have is 65535
+
+ docker container run -d --name arya --hostname arya.com -p 80:80 httpd --> For port mapping 80:80 1st 80 is for host and 2nd 80 is for container
+
+Difference between -p and -P
+
+Restart policy 
+1. no
+2. on-failure[:max-retries]
+3. always
+4. unless-stopped
+
+What is dangling image?
+
+Image tag and push
+docker image tag Vaibhav:latest khojroot/aryanew
+docker image push khojroot/aryanew
+
+Networks in docker 
+1. Bridge --> By default bridge is given and it assign Private IP to the container
+2. Host --> It can give the network only to the one container
+3. None --> It do not assign any IP to the container. It is used only for testing purpose. 
+
+CIDR Notations
+/8 --> Class A
+/16 --> Class B
+/24 --> Class C
+/30 --> Class D
+
+docker network create --driver bridge --subnet 192.168.0.0/16 Vaibhav
+docker container run -d --name network --network Vaibhav httpd
+
+Volumes in docker
+
+Bind mount
+mkdir /container
+cd /container
+docker container run -d --name web1 -p 80:80 -v /container/:/usr/local/apache2/htdocs httpd
+
+local  or volume mount
+docker container run -d --name web2 -p 82:80 -v sumit:/usr/local/apache2/htdocs httpd
+Path of docker content --> cd /var/lib/docker
+
+docker volume create hello
+
+Project:
+mkdir database
+mkdir website
+docker container run -d --name database -v /root/database:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=redhat -e MYSQL_DATABASE=content MySQL
+docker container run -d --name web -v website:/var/www/html -p 80:80 wordpress
+MySQL -h 172.17.0.2 -u root -p
+
+
+Image file:
+1. CentOS
+2. Install httpd
+3. Run httpd on 8080
+4. Expose 8080
+5. Create Index .html on server and write your name
+6. Working dir /var/www/html
+7. Copy index.html on image
+8. Working dir /var
+9. Maintainer give your name
+10. cmd
+
+FROM centos:latest
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+RUN yum install -y httpd
+WORKDIR /var/www/html
+COPY index.html .
+RUN sed -i 's/^Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
+WORKDIR /var
+MAINTAINER Vaibhav
+CMD [ "/usr/sbin/httpd" , "-D", "FOREGROUND" ]
+EXPOSE 8080
+
+docker build . -t httpd2:updated 
+
+Docker Compose
+mkdir compose
+vim docker-compose.yml
+version: "3.1"
+services:
+  database:
+    image: mariadb:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: "redhat"
+      MARIADB_DATABASE: "content"
+    volumes:
+      - db:/var/lib/mysql
+  wordpress:
+    image: wordpress:latest
+    environment:
+      WORDPRESS_DB_HOST: "database"
+      WORDPRESS_DB_USER: "root"
+      WORDPRESS_DB_PASSWORD: "redhat"
+      WORDPRESS_DB_NAME: "content"
+    volumes:
+      - wp:/var/www/html
+    ports:
+      - 80:80
+
+volumes:
+  wp:
+  db:
+
+docker-compose -f docker-compose.yml up
+docker-compose -f docker-compose.yml start
+
