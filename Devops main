@@ -590,3 +590,17 @@ volumes:
 docker-compose -f docker-compose.yml up
 docker-compose -f docker-compose.yml start
 
+Terraform --> Open source software
+2014 July (AWS and Digital Ocean)
+2017 Azure
+
+2025(180+)
+Terraform is built in GO language but can be written in
+HCL(Harshi Corp Language)
+
+Approach:
+1. Imperaitve Approach --> Sequencewise execution (Ansible)
+2. Declarative Approach --> Terraform works on it.
+
+ARM: Azure Resource Manager
+AWS: Cloud Formation
