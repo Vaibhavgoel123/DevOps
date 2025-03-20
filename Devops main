@@ -590,6 +590,7 @@ volumes:
 docker-compose -f docker-compose.yml up
 docker-compose -f docker-compose.yml start
 
+Terraform
 Terraform --> Open source software
 2014 July (AWS and Digital Ocean)
 2017 Azure
@@ -604,3 +605,38 @@ Approach:
 
 ARM: Azure Resource Manager
 AWS: Cloud Formation
+
+terraform init --> Initialize the terraform 
+terraform validate --> It validates the structure
+terraform fmt --> Bring all the code in linear manner
+terraform apply --> Creating resources
+terraform destroy --> Deleting the elements
+terraform plan --> Dry run the whole code
+vim new.tf
+
+resource "aws_instance" "compute" {
+  ami               = "ami-04b4f1a9cf54c11d0"
+  instance_type     = "t2.micro"
+  availability_zone = "us-east-1a"
+  tags = {
+    Name = "Aryans"
+  }
+}
+
+resource "aws_ebs_volume" "volume" {
+  availability_zone = "us-east-1a"
+  size              = 1
+  tags = {
+    Name = "my-vol"
+  }
+}
+
+resource "aws_volume_attachment" "ebs_att" {
+  device_name = "/dev/sdh"
+  volume_id   = aws_ebs_volume.volume.id
+  instance_id = aws_instance.compute.id
+}
+
+terraform plan
+terraform apply --auto-approve
+terraform destroy --auto-approve
