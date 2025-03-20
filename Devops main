@@ -3,14 +3,14 @@ Managing dns servers
 iana : Internet Assigned Numbers Authority
 
 1.) . --> root dns server 
-	i.).in           --|
+	i.).in           --+
 	ii.).org           | 
 	iii.).tech         |
-	iv.).fun           |--tld
+	iv.).fun           +--tld
 	v.).edu            |
 	vi.).tk            |
 	vii.).com          |
-	more..		 --|
+	more..		 --+
 Domain registrar: hostinger, GoDaddy
 tld: Top-level domain
 ex: linuxguru.tech.
@@ -23,13 +23,13 @@ Responsible for dns resolving the IP address
 2.)dns resolver/cache dns
 3.)tld
 4.)authorative dns
-                                         |--> root name server
+                                         +--> root name server
 web server             |                 |<--  
-                       | --> client --> isp --> dns resolver 
-ex. www.eshopping.com  | <--        <-- ||-->.com(www.eshopping.com --> 45.67.23.23)
+                       + --> client --> isp --> dns resolver 
+ex. www.eshopping.com  | <--        <---++-->.com(www.eshopping.com --> 45.67.23.23)
     (12.56.82.10)                       ||<--
                                         |<--
-                                        |-->Authorized dns server (45.67.23.23)
+                                        +-->Authorized dns server (45.67.23.23)
 
 DHCP(Dynamic Host Configuration Protocol):
 It is a network management protocol used on IP networks for automatically assigning IP addresses and comm. parameters to device connected to the network using a client-server
@@ -45,8 +45,8 @@ DNS Records:
 ex. www.example.com(CNAME) --> example.com(Domain)
 4. MX (Mail Exchange) --> It is basically used for mail server and for record it use 'A' record
 5. TXT (text) --> Human readable form
-6. NS (NameServer) -->|--> Primary NS (Master)    ---> IPV4
- 		      |--> Secondary NS (Slave)
+6. NS (NameServer) --> +--> Primary NS (Master)    ---> IPV4
+ 		       +--> Secondary NS (Slave)
 7.SOA (Start of Authority) --> It has an important info. about the domain.
 8.PTR --> Used for reverse lookup.
 
