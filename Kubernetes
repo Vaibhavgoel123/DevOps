@@ -1,0 +1,38 @@
+Kubernetes (often abbreviated as K8s) is an open-source container orchestration platform that automates the deployment, scaling, and management of containerized applications. 
+It was originally developed by Google and is now maintained by the Cloud Native Computing Foundation (CNCF).
+
+Features:
+1. Load balancing
+2. Scaling
+3. Self healing
+4. Cluster (Group of nodes) level formation
+
+It never creates container but it manages the container.
+
+Master node 
+1. Minimum 1 and Maximum 3
+
+Worker node
+N number of nodes
+
+Advantages
+1. High availability
+2. Centeralized management
+3. Scalability
+4. Project level isolation
+5. User level role (RBAC --> Role based access control)
+6. Quota allocation
+7. Internal load balancing
+
+Master node (Control Pane):
+API Server --> Establishes connection between the components.(kube-apiserver)
+etcd --> It store key value pair in yaml format. 
+controller --> It works with api server and recursively communicates with etcd. It manages actual value (current value) and desired value.
+scheduler --> It finds the best fit node bases on resources and other factors.
+
+Worker node:
+Kubelet --> It creates pod and connects with controller it by the api server. It takes the set of PodSpecs and ckeck on them.
+CRI (container runtime interface) --> It creates container.
+Network Proxy(kube proxy) --> It creates and manage networking between pods.
+
+These components are also available in master node.
