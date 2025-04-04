@@ -91,9 +91,8 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 Master node:
 
-sudo kubeadm init
-sudo vim .bash_profile
+sudo kubeadm init --> It preflight checks and pull the images so as to create the environment for the kubernetes.
+sudo vim .bashrc
 Entries:
-export
-KUBECONFIG=/etc/kubernetes/admin.conf
+export KUBECONFIG=/etc/kubernetes/admin.conf
 
