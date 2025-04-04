@@ -80,7 +80,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 Master node:
 
-kubeadm init
+sudo kubeadm init
 sudo vim .bash_profile
 Entries:
 export
