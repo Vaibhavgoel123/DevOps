@@ -35,6 +35,18 @@ Kubelet --> It creates pod and connects with controller it by the api server. It
 CRI (container runtime interface) --> It creates container.
 Network Proxy(kube proxy) --> It creates and manage networking between pods.
 
+CNI --> Container Network Interface provides network between master and worker nodes.
+
+Prerequisities:
+1. Swap memory will be off.
+2. MAC address should be unique.
+3. Hostname should be different.
+4. Min 2CPU and 2GB RAM.
+
+Types of cluster:
+1. kubeadm --> Multi-node cluster
+2. minikube --> Single node cluster
+
 These components are also available in master node.
 
 Setup:
