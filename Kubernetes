@@ -96,3 +96,26 @@ sudo vim .bashrc
 Entries:
 export KUBECONFIG=/etc/kubernetes/admin.conf
 
+
+Replication controller
+vim rc.yaml
+
+**Entries
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: myrc
+spec:
+  replicas: 10
+  template: 
+    metadata:
+      name: abc
+      labels:
+        app: webserver
+  spec:
+    containers:
+      - name: con
+        image: httpd
+
+
+
