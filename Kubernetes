@@ -112,10 +112,10 @@ spec:
       name: abc
       labels:
         app: webserver
-  spec:
-    containers:
-      - name: con
-        image: httpd
+      spec:
+        containers:
+          - name: con
+            image: httpd
 
 
 
