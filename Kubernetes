@@ -118,4 +118,9 @@ spec:
           image: httpd
 
 
+kubectl get rc
+kubectl get pods
+kubectl describe rc
+kubectl delete pods /*pod-name*/
+kubectl delete rc {rc-name}
 
