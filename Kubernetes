@@ -124,3 +124,29 @@ kubectl describe rc
 kubectl delete pods /*pod-name*/
 kubectl delete rc {rc-name}
 
+Deployment
+vim deployment.yaml
+**Entries**
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: mydeployment
+spec: 
+  selector:
+    matchLabels:
+      app: web
+  replicas: 50
+  template:
+    metadata:
+      name: myrs
+      labels:
+        app: web
+      spec:
+        containers:
+          - name: con
+            image: httpd
+
+kubectl create -f deployment.yaml
+kubectl get deployments.apps
+kubectl get rs
+kubectl replace deployment.yaml
