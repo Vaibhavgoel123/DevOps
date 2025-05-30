@@ -150,3 +150,33 @@ kubectl create -f deployment.yaml
 kubectl get deployments.apps
 kubectl get rs
 kubectl replace deployment.yaml
+
+
+
+
+Commands related to deployment:
+
+sudo vim deployment.yaml
+kubectl create -f deployment.yaml 
+kubectl get deployments
+kubectl get pods
+kubectl get rs
+sudo vim deployment.yaml
+kubectl rollout status deployment mydeployment 
+kubectl describe deployments.apps 
+kubectl rollout history deployment mydeployment 
+sudo vim deployment.yaml
+kubectl set image deployments mydeployment httpd=nginx:latest --record
+kubectl rollout history deployment mydeployment 
+kubectl rollout history deployment mydeployment --revision 1
+kubectl rollout undo deployment mydeployment --to-revision 1
+kubectl scale deployment mydeployment --replicas 20
+kubectl edit deployments.apps mydeployment 
+kubectl delete deployments.apps mydeployment 
+kubectl get deployments.apps 
+kubectl create deployment --image httpd --replicas 5
+kubectl create deployment --image httpd --replicas 5 test
+kubectl create deployment web-server --replicas 20 --image nginx --dry-run=client -o yaml
+kubectl create deployment web-server --replicas 20 --image nginx --dry-run=client -o yaml > nginx.yaml
+kubectl run neel --image httpd --dry-run=client -o yaml
+kubectl run neel --image httpd --dry-run=client -o yaml > web.yaml
